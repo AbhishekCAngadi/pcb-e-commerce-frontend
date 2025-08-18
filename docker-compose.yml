@@ -1,0 +1,64 @@
+
+services:
+  django-backend:
+    build: ./backend/django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/django:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/django/.env
+    depends_on:
+      - mysql
+
+  fastapi-cart:
+    build: ./backend/fastapi-cart
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    volumes:
+      - ./backend/fastapi-cart:/app
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/fastapi-cart/.env
+    depends_on:
+      - mongodb
+
+  nextjs-frontend:
+    build: ./frontend/nextjs-shop
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/nextjs-shop/.env
+
+  react-admin-frontend:
+    build: ./frontend/react-admin
+    command: npm start
+    volumes:
+      - ./frontend/react-admin:/app
+      - /app/node_modules
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./frontend/react-admin/.env
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: pcbshop
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mysql-data:
+  mongo-data:
